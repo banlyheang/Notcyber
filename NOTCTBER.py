@@ -5,8 +5,8 @@ import time
 import re
 
 # Telegram Bot Configuration
-TELEGRAM_BOT_TOKEN = '7985076435:AAFzZHacgWBfk2DjzGO3BnFWpT6LYTZ874A'
-TELEGRAM_CHAT_ID = '6837307356'
+TELEGRAM_BOT_TOKEN = '8822802774:AAF2GEdik4_1CU_h6-uYcXBoWCAnstI93M8'
+TELEGRAM_CHAT_ID = '568280939'
 
 # File path
 FILE_PATH = '/storage/emulated/0/Download/th.txt'
