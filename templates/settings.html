@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - L@ZY SHOP Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { transition: background-color 0.3s ease, color 0.3s ease; }
+        
+        body.dark-mode { background-color: #1a1a2e; color: #eee; }
+        body.dark-mode .main-content { background-color: #16213e; }
+        body.dark-mode .settings-card, body.dark-mode .navbar-top { background-color: #0f3460; color: #eee; border: 1px solid #1a1a2e; }
+        body.dark-mode .text-muted { color: #aaa !important; }
+        body.dark-mode .form-control, body.dark-mode .form-select { background-color: #1a1a2e; color: #eee; border-color: #0f3460; }
+        body.dark-mode .form-control:focus { background-color: #1a1a2e; color: #eee; }
+        body.dark-mode .alert-info { background-color: #0f3460; color: #eee; border-color: #1a1a2e; }
+        body.dark-mode .modal-content { background-color: #0f3460; color: #eee; }
+        body.dark-mode .btn-close { filter: invert(1); }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 260px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-nav { padding: 20px 0; }
+        .sidebar-nav .nav-link { color: rgba(255,255,255,0.8); padding: 12px 20px; margin: 5px 15px; border-radius: 10px; transition: all 0.3s; }
+        .sidebar-nav .nav-link:hover, .sidebar-nav .nav-link.active { background: rgba(255,255,255,0.2); color: white; transform: translateX(5px); }
+        .sidebar-nav .nav-link i { margin-right: 10px; }
+        
+        .main-content { margin-left: 260px; padding: 20px; background: #f5f7fb; min-height: 100vh; transition: background-color 0.3s; }
+        
+        .settings-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .settings-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        
+        .navbar-top {
+            background: white;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+        
+        .theme-toggle {
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: #f0f0f0;
+            transition: all 0.3s;
+        }
+        
+        body.dark-mode .theme-toggle { background: #0f3460; color: #ffd700; }
+        
+        .btn-upload {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-upload:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
+        
+        .logo-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 15px;
+            object-fit: contain;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            padding: 10px;
+        }
+        
+        .toast-notification { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
+        
+        .password-strength { font-size: 12px; margin-top: 5px; }
+        .strength-weak { color: #dc3545; }
+        .strength-medium { color: #ffc107; }
+        .strength-strong { color: #28a745; }
+        
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in-up { animation: fadeInUp 0.5s ease forwards; }
+        
+        @media (max-width: 768px) { .sidebar { margin-left: -260px; } .main-content { margin-left: 0; } }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            {% if logo %}<img src="{{ logo }}" alt="Logo" style="width: 50px; height: 50px; border-radius: 10px; margin-bottom: 10px;">{% else %}<i class="bi bi-shop fs-1"></i>{% endif %}
+            <h4 class="mt-2">L@ZY SHOP</h4><small>Admin Dashboard</small>
+        </div>
+        <div class="sidebar-nav">
+            <nav class="nav flex-column">
+                <a class="nav-link" href="/"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                <a class="nav-link" href="/products"><i class="bi bi-box"></i> Products</a>
+                <a class="nav-link" href="/orders"><i class="bi bi-cart"></i> Orders</a>
+                <a class="nav-link" href="/users"><i class="bi bi-people"></i> Users</a>
+                <a class="nav-link" href="/reports"><i class="bi bi-file-text"></i> Reports</a>
+                <a class="nav-link active" href="/settings"><i class="bi bi-gear"></i> Settings</a>
+                <hr class="bg-light"><a class="nav-link" href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="navbar-top d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="bi bi-gear"></i> Settings</h4>
+            <div class="d-flex gap-3 align-items-center">
+                <div class="theme-toggle" onclick="toggleTheme()"><i class="bi bi-moon-stars"></i> <span id="themeText">Dark Mode</span></div>
+            </div>
+        </div>
+        
+        <div class="settings-card fade-in-up">
+            <h5><i class="bi bi-image"></i> Store Logo</h5><hr>
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center">{% if logo %}<img src="{{ logo }}" class="logo-preview" id="logoPreview">{% else %}<img src="https://via.placeholder.com/120x120?text=No+Logo" class="logo-preview" id="logoPreview">{% endif %}</div>
+                <div class="col-md-9"><p class="text-muted">Upload your store logo. It will appear in the sidebar and dashboard header.</p>
+                <div class="mb-3"><input type="file" class="form-control" id="logoInput" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"></div>
+                <div><button class="btn btn-upload text-white" onclick="uploadLogo()"><i class="bi bi-cloud-upload"></i> Upload Logo</button><button class="btn btn-outline-danger ms-2" onclick="removeLogo()"><i class="bi bi-trash"></i> Remove Logo</button></div></div>
+            </div>
+        </div>
+        
+        <div class="settings-card fade-in-up" style="animation-delay: 0.05s;">
+            <h5><i class="bi bi-key"></i> Change Admin Password</h5><hr>
+            <div class="row g-3">
+                <div class="col-md-12"><label class="form-label">Current Password</label><input type="password" class="form-control" id="currentPassword" placeholder="Enter current password"></div>
+                <div class="col-md-6"><label class="form-label">New Password</label><input type="password" class="form-control" id="newPassword" placeholder="Min 6 characters" onkeyup="checkPasswordStrength()"><div class="password-strength" id="passwordStrength"></div></div>
+                <div class="col-md-6"><label class="form-label">Confirm New Password</label><input type="password" class="form-control" id="confirmPassword" placeholder="Re-enter new password"></div>
+                <div class="col-12"><button class="btn btn-primary" onclick="changePassword()"><i class="bi bi-key"></i> Change Password</button></div>
+                <div class="col-12" id="passwordMessage"></div>
+            </div>
+        </div>
+        
+        <div class="settings-card fade-in-up" style="animation-delay: 0.1s;">
+            <h5><i class="bi bi-shield-lock"></i> Security Information</h5><hr>
+            <div class="alert alert-info"><i class="bi bi-info-circle"></i> <strong>Password Security:</strong> Password is stored as a secure hash in the database. No plain text passwords are ever saved.</div>
+            <div class="row"><div class="col-md-6"><label class="form-label">Username</label><input type="text" class="form-control" value="admin" disabled></div>
+            <div class="col-md-6"><label class="form-label">Password Status</label><input type="text" class="form-control" value="Can be changed above" disabled></div></div>
+        </div>
+        
+        <div class="settings-card fade-in-up" style="animation-delay: 0.15s;">
+            <h5><i class="bi bi-database"></i> Database Information</h5><hr>
+            <div class="row"><div class="col-md-6"><label class="form-label">Database Path</label><input type="text" class="form-control" value="lazy_shop.db" disabled></div>
+            <div class="col-md-6"><label class="form-label">Last Backup</label><input type="text" class="form-control" id="lastBackupInfo" value="Not available" disabled></div></div>
+        </div>
+        
+        <div class="settings-card fade-in-up" style="animation-delay: 0.2s;">
+            <h5><i class="bi bi-info-circle"></i> System Information</h5><hr>
+            <div class="row"><div class="col-md-4"><small class="text-muted">Dashboard Version</small><div><strong>v3.0</strong></div></div>
+            <div class="col-md-4"><small class="text-muted">Flask Version</small><div><strong>3.0+</strong></div></div>
+            <div class="col-md-4"><small class="text-muted">Bot Version</small><div><strong>7.6.0</strong></div></div></div>
+        </div>
+    </div>
+    
+    <div class="toast-notification"><div id="liveToast" class="toast" role="alert" data-bs-delay="3000"><div class="toast-header"><strong class="me-auto"><i class="bi bi-check-circle-fill text-success"></i> Success</strong><button type="button" class="btn-close" data-bs-dismiss="toast"></button></div><div class="toast-body" id="toastMessage">Operation completed successfully!</div></div></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let toast;
+        function showToast(message, isError = false) {
+            const toastEl = document.getElementById('liveToast');
+            const toastHeader = toastEl.querySelector('.toast-header strong');
+            const toastBody = document.getElementById('toastMessage');
+            if (isError) { toastHeader.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i> Error'; }
+            else { toastHeader.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i> Success'; }
+            toastBody.textContent = message;
+            if (!toast) { toast = new bootstrap.Toast(toastEl); }
+            toast.show();
+        }
+        
+        function setTheme(theme) {
+            if (theme === 'dark') { document.body.classList.add('dark-mode'); document.getElementById('themeText').innerHTML = 'Light Mode'; localStorage.setItem('theme', 'dark'); }
+            else { document.body.classList.remove('dark-mode'); document.getElementById('themeText').innerHTML = 'Dark Mode'; localStorage.setItem('theme', 'light'); }
+        }
+        function toggleTheme() { const isDark = document.body.classList.contains('dark-mode'); setTheme(isDark ? 'light' : 'dark'); }
+        const savedTheme = localStorage.getItem('theme') || 'light'; setTheme(savedTheme);
+        
+        function checkPasswordStrength() {
+            const password = document.getElementById('newPassword').value;
+            const strengthDiv = document.getElementById('passwordStrength');
+            if (!password) { strengthDiv.innerHTML = ''; return; }
+            let strength = 0;
+            if (password.length >= 6) strength++;
+            if (password.length >= 10) strength++;
+            if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+            if (password.match(/[0-9]/)) strength++;
+            if (password.match(/[^a-zA-Z0-9]/)) strength++;
+            if (strength <= 2) { strengthDiv.innerHTML = '<span class="strength-weak">⚠️ Weak password</span>'; }
+            else if (strength <= 4) { strengthDiv.innerHTML = '<span class="strength-medium">⚠️ Medium password</span>'; }
+            else { strengthDiv.innerHTML = '<span class="strength-strong">✓ Strong password</span>'; }
+        }
+        
+        function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const messageDiv = document.getElementById('passwordMessage');
+            if (!currentPassword || !newPassword || !confirmPassword) { messageDiv.innerHTML = '<div class="alert alert-danger">Please fill all fields!</div>'; return; }
+            if (newPassword.length < 6) { messageDiv.innerHTML = '<div class="alert alert-danger">New password must be at least 6 characters!</div>'; return; }
+            if (newPassword !== confirmPassword) { messageDiv.innerHTML = '<div class="alert alert-danger">New passwords do not match!</div>'; return; }
+            messageDiv.innerHTML = '<div class="alert alert-info">Changing password...</div>';
+            fetch('/api/change-password', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ current_password: currentPassword, new_password: newPassword, confirm_password: confirmPassword })
+            }).then(response => response.json()).then(data => {
+                if (data.success) {
+                    messageDiv.innerHTML = `<div class="alert alert-success"><i class="bi bi-check-circle"></i> ${data.message}<br>Redirecting to login page...</div>`;
+                    showToast('Password changed successfully! Please login again.');
+                    setTimeout(() => { window.location.href = '/logout'; }, 2000);
+                } else { messageDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`; showToast(data.error, true); }
+            }).catch(error => { messageDiv.innerHTML = '<div class="alert alert-danger">Network error!</div>'; showToast('Network error!', true); });
+        }
+        
+        function uploadLogo() {
+            const file = document.getElementById('logoInput').files[0];
+            if (!file) { showToast('Please select a file first!', true); return; }
+            const formData = new FormData(); formData.append('logo', file);
+            showToast('Uploading logo...');
+            fetch('/api/upload-logo', { method: 'POST', body: formData }).then(response => response.json()).then(data => {
+                if (data.success) { document.getElementById('logoPreview').src = data.logo_url + '?t=' + new Date().getTime(); showToast('Logo uploaded successfully!'); setTimeout(() => location.reload(), 1500); }
+                else { showToast(data.error || 'Upload failed!', true); }
+            }).catch(() => showToast('Network error!', true));
+        }
+        
+        function removeLogo() {
+            if (confirm('Are you sure you want to remove the store logo?')) {
+                fetch('/api/remove-logo', { method: 'DELETE' }).then(response => response.json()).then(data => {
+                    if (data.success) { showToast('Logo removed successfully!'); setTimeout(() => location.reload(), 1500); }
+                    else { showToast('Failed to remove logo!', true); }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

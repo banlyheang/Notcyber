@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - L@ZY SHOP Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { transition: background-color 0.3s ease; }
+        body.dark-mode { background-color: #1a1a2e; color: #eee; }
+        body.dark-mode .main-content { background-color: #16213e; }
+        body.dark-mode .card, body.dark-mode .navbar-top { background-color: #0f3460; color: #eee; border: 1px solid #1a1a2e; }
+        body.dark-mode .text-muted { color: #aaa !important; }
+        
+        .sidebar {
+            position: fixed; left: 0; top: 0; height: 100vh; width: 260px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;
+        }
+        .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-nav { padding: 20px 0; }
+        .sidebar-nav .nav-link { color: rgba(255,255,255,0.8); padding: 12px 20px; margin: 5px 15px; border-radius: 10px; transition: all 0.3s; }
+        .sidebar-nav .nav-link:hover, .sidebar-nav .nav-link.active { background: rgba(255,255,255,0.2); color: white; transform: translateX(5px); }
+        .sidebar-nav .nav-link i { margin-right: 10px; }
+        
+        .main-content { margin-left: 260px; padding: 20px; background: #f5f7fb; min-height: 100vh; }
+        .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .navbar-top { background: white; border-radius: 12px; padding: 15px 20px; margin-bottom: 20px; }
+        .theme-toggle { cursor: pointer; padding: 8px 15px; border-radius: 20px; background: #f0f0f0; transition: all 0.3s; }
+        body.dark-mode .theme-toggle { background: #0f3460; color: #ffd700; }
+        .period-btn { cursor: pointer; padding: 5px 15px; border-radius: 20px; transition: all 0.3s; }
+        .period-btn.active { background: #667eea; color: white; }
+        .stat-number { font-size: 2rem; font-weight: bold; }
+        
+        @media (max-width: 768px) { .sidebar { margin-left: -260px; } .main-content { margin-left: 0; } }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            {% if logo %}<img src="{{ logo }}" alt="Logo" style="width: 50px; height: 50px; border-radius: 10px;">{% else %}<i class="bi bi-shop fs-1"></i>{% endif %}
+            <h4 class="mt-2">L@ZY SHOP</h4><small>Admin Dashboard</small>
+        </div>
+        <div class="sidebar-nav">
+            <nav class="nav flex-column">
+                <a class="nav-link" href="/"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                <a class="nav-link" href="/products"><i class="bi bi-box"></i> Products</a>
+                <a class="nav-link" href="/orders"><i class="bi bi-cart"></i> Orders</a>
+                <a class="nav-link" href="/users"><i class="bi bi-people"></i> Users</a>
+                <a class="nav-link active" href="/analytics"><i class="bi bi-graph-up"></i> Analytics</a>
+                <a class="nav-link" href="/reports"><i class="bi bi-file-text"></i> Reports</a>
+                <a class="nav-link" href="/settings"><i class="bi bi-gear"></i> Settings</a>
+                <hr class="bg-light"><a class="nav-link" href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="navbar-top d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="bi bi-graph-up"></i> Sales Analytics</h4>
+            <div class="d-flex gap-3 align-items-center">
+                <div class="theme-toggle" onclick="toggleTheme()"><i class="bi bi-moon-stars"></i> <span id="themeText">Dark Mode</span></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="d-flex justify-content-center gap-2">
+                <span class="period-btn" data-period="week">Last 7 Days</span>
+                <span class="period-btn active" data-period="month">Last 30 Days</span>
+                <span class="period-btn" data-period="year">Last Year</span>
+                <span class="period-btn" data-period="all">All Time</span>
+            </div>
+        </div>
+        
+        <div class="row" id="statsSummary">
+            <div class="col-md-3"><div class="card stat-card text-center"><i class="bi bi-cart fs-2"></i><div class="stat-number" id="totalOrders">-</div><small>Total Orders</small></div></div>
+            <div class="col-md-3"><div class="card stat-card text-center"><i class="bi bi-currency-dollar fs-2"></i><div class="stat-number" id="totalRevenue">$0</div><small>Total Revenue</small></div></div>
+            <div class="col-md-3"><div class="card stat-card text-center"><i class="bi bi-receipt fs-2"></i><div class="stat-number" id="avgOrderValue">$0</div><small>Avg Order Value</small></div></div>
+            <div class="col-md-3"><div class="card stat-card text-center"><i class="bi bi-people fs-2"></i><div class="stat-number" id="uniqueCustomers">-</div><small>Unique Customers</small></div></div>
+        </div>
+        
+        <div class="card"><h5><i class="bi bi-calendar-week"></i> Daily Sales Trend</h5><hr><canvas id="dailySalesChart" height="100"></canvas></div>
+        
+        <div class="row">
+            <div class="col-md-6"><div class="card"><h5><i class="bi bi-pie-chart"></i> Sales by Category</h5><hr><canvas id="categoryChart" height="250"></canvas></div></div>
+            <div class="col-md-6"><div class="card"><h5><i class="bi bi-clock"></i> Peak Hours</h5><hr><canvas id="hourlyChart" height="250"></canvas></div></div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let dailyChart, categoryChart, hourlyChart;
+        let currentPeriod = 'month';
+        
+        function setTheme(theme) {
+            if (theme === 'dark') { document.body.classList.add('dark-mode'); document.getElementById('themeText').innerHTML = 'Light Mode'; localStorage.setItem('theme', 'dark'); }
+            else { document.body.classList.remove('dark-mode'); document.getElementById('themeText').innerHTML = 'Dark Mode'; localStorage.setItem('theme', 'light'); }
+        }
+        function toggleTheme() { setTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark'); }
+        const savedTheme = localStorage.getItem('theme') || 'light'; setTheme(savedTheme);
+        
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentPeriod = this.dataset.period;
+                loadAnalytics();
+            });
+        });
+        
+        function loadAnalytics() {
+            fetch(`/api/sales-analytics?period=${currentPeriod}`).then(r=>r.json()).then(data => {
+                document.getElementById('totalOrders').innerHTML = data.summary.total_orders || 0;
+                document.getElementById('totalRevenue').innerHTML = `$${parseFloat(data.summary.total_revenue || 0).toFixed(2)}`;
+                document.getElementById('avgOrderValue').innerHTML = `$${parseFloat(data.summary.avg_order_value || 0).toFixed(2)}`;
+                document.getElementById('uniqueCustomers').innerHTML = data.summary.unique_customers || 0;
+                
+                if (dailyChart) dailyChart.destroy();
+                dailyChart = new Chart(document.getElementById('dailySalesChart'), {
+                    type: 'line', data: { labels: data.daily_sales.map(d=>d.date), datasets: [
+                        { label: 'Revenue ($)', data: data.daily_sales.map(d=>d.revenue), borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.1)', tension: 0.3, fill: true, yAxisID: 'y' },
+                        { label: 'Orders', data: data.daily_sales.map(d=>d.order_count), borderColor: '#667eea', backgroundColor: 'rgba(102,126,234,0.1)', tension: 0.3, fill: true, yAxisID: 'y1' }
+                    ] }, options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'Revenue ($)' } }, y1: { position: 'right', title: { display: true, text: 'Orders' }, grid: { drawOnChartArea: false } } } }
+                });
+                
+                if (categoryChart) categoryChart.destroy();
+                categoryChart = new Chart(document.getElementById('categoryChart'), {
+                    type: 'doughnut', data: { labels: data.category_sales.map(c=>c.category), datasets: [{ data: data.category_sales.map(c=>c.revenue), backgroundColor: ['#667eea','#764ba2','#28a745','#ffc107','#dc3545','#17a2b8','#fd7e14','#6f42c1','#20c997','#e83e8c'] }] },
+                    options: { responsive: true, maintainAspectRatio: true }
+                });
+                
+                if (hourlyChart) hourlyChart.destroy();
+                hourlyChart = new Chart(document.getElementById('hourlyChart'), {
+                    type: 'bar', data: { labels: data.hourly_sales.map(h=>`${h.hour}:00`), datasets: [{ label: 'Orders', data: data.hourly_sales.map(h=>h.order_count), backgroundColor: '#667eea', borderRadius: 8 }] },
+                    options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, title: { display: true, text: 'Number of Orders' } } } }
+                });
+            });
+        }
+        loadAnalytics();
+    </script>
+</body>
+</html>
